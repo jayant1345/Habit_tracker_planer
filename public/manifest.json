@@ -1,0 +1,48 @@
+{
+  "name": "MorPankh Habits & Activity Tracker",
+  "short_name": "MorPankh",
+  "description": "Multi-User Activity & Habit Progress Tracker with streaks, Kanban, Pomodoro focus, and rich analytics.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#041d27",
+  "theme_color": "#0b3340",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["productivity", "lifestyle", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Habits",
+      "url": "/?tab=habits",
+      "description": "Quickly check in your habits"
+    },
+    {
+      "name": "Tasks & Kanban",
+      "url": "/?tab=tasks",
+      "description": "Manage your daily activities"
+    },
+    {
+      "name": "Focus Mode",
+      "url": "/?tab=pomodoro",
+      "description": "Start a Pomodoro focus sprint"
+    }
+  ]
+}

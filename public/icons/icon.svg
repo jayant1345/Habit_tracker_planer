@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0e4759"/>
+      <stop offset="60%" stop-color="#0b3340"/>
+      <stop offset="100%" stop-color="#041d27"/>
+    </radialGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef5d6"/>
+      <stop offset="40%" stop-color="#f4a313"/>
+      <stop offset="100%" stop-color="#b45f0b"/>
+    </linearGradient>
+    <linearGradient id="tealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3eb0cd"/>
+      <stop offset="50%" stop-color="#147694"/>
+      <stop offset="100%" stop-color="#17b890"/>
+    </linearGradient>
+    <linearGradient id="royalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7790ef"/>
+      <stop offset="50%" stop-color="#3d4cd4"/>
+      <stop offset="100%" stop-color="#0d1134"/>
+    </linearGradient>
+    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Outer Rounded Shield -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)"/>
+  <rect width="500" height="500" x="6" y="6" rx="122" fill="none" stroke="url(#goldGrad)" stroke-width="6" opacity="0.8"/>
+  
+  <!-- Outer Peacock Feather Plume Halo -->
+  <ellipse cx="256" cy="220" rx="140" ry="170" fill="url(#tealGrad)" opacity="0.3" filter="url(#goldGlow)"/>
+  
+  <!-- Feather Outer Fan Shape -->
+  <path d="M 256 60 C 370 120 380 270 256 430 C 132 270 142 120 256 60 Z" fill="url(#tealGrad)" stroke="url(#goldGrad)" stroke-width="4"/>
+  
+  <!-- Inner Royal Blue Plumage -->
+  <ellipse cx="256" cy="220" rx="85" ry="110" fill="url(#royalGrad)"/>
+  
+  <!-- Golden Eye Ring -->
+  <ellipse cx="256" cy="210" rx="60" ry="75" fill="url(#goldGrad)"/>
+  
+  <!-- Deep Teal / Mor Pankh Pupil -->
+  <ellipse cx="256" cy="210" rx="40" ry="50" fill="#041d27"/>
+  
+  <!-- Shimmering Star / Sparkle in Center of Eye -->
+  <circle cx="256" cy="205" r="14" fill="#3eb0cd"/>
+  <circle cx="256" cy="205" r="7" fill="#ffffff"/>
+  
+  <!-- Gold Stem Spine -->
+  <path d="M 256 160 Q 256 320 256 460" stroke="url(#goldGrad)" stroke-width="8" stroke-linecap="round"/>
+  
+  <!-- Radiating Gold Highlights -->
+  <path d="M 256 430 L 290 400 M 256 390 L 305 360 M 256 350 L 315 320 M 256 310 L 320 280" stroke="url(#goldGrad)" stroke-width="3" opacity="0.6"/>
+  <path d="M 256 430 L 222 400 M 256 390 L 207 360 M 256 350 L 197 320 M 256 310 L 192 280" stroke="url(#goldGrad)" stroke-width="3" opacity="0.6"/>
+</svg>
