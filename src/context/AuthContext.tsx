@@ -53,7 +53,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const existingMap = new Map(parsed.map((u) => [u.id, u]));
         // Keep demo passwords and usernames synchronized with DEMO_USERS definition
         DEMO_USERS.forEach((demo) => {
-          const existing = existingMap.get(demo.id);
+          let existing = existingMap.get(demo.id);
+          if (!existing) {
+            for (const val of Array.from(existingMap.values())) {
+              if (val.username?.toLowerCase() === demo.username.toLowerCase()) {
+                existing = val;
+                break;
+              }
+            }
+          }
           if (!existing) {
             existingMap.set(demo.id, demo);
           } else {
@@ -105,17 +113,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // 1. Login with Username & Password
   const login = (usernameInput: string, passwordInput: string, rememberMe = false) => {
     const trimmedUser = usernameInput.trim().toLowerCase();
-    const targetUser = users.find(
+    let targetUser = users.find(
       (u) =>
         u.username?.toLowerCase() === trimmedUser ||
         u.email?.toLowerCase() === trimmedUser ||
         u.id.toLowerCase() === trimmedUser
     );
 
+    // Reliable fallback to DEMO_USERS if not yet populated in state
+    if (!targetUser) {
+      targetUser = DEMO_USERS.find(
+        (u) =>
+          u.username?.toLowerCase() === trimmedUser ||
+          u.email?.toLowerCase() === trimmedUser ||
+          u.id.toLowerCase() === trimmedUser
+      );
+    }
+
     if (!targetUser) {
       return {
         success: false,
-        error: `User "${usernameInput}" not found. Please choose a sample profile or register.`,
+        error: `User "${usernameInput}" not found. Try signing in as @hitesh or use demo account @arjun.`,
       };
     }
 
@@ -124,8 +142,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       passwordInput === expectedPassword ||
       (targetUser.username === 'hitesh' && (passwordInput === 'hitesh123' || passwordInput === 'password123')) ||
       (targetUser.username === 'arjun' && (passwordInput === 'arjun123' || passwordInput === 'password123')) ||
-      (targetUser.username === 'priya' && (passwordInput === 'priya123' || passwordInput === 'password123')) ||
-      (targetUser.username === 'vikram' && (passwordInput === 'vikram123' || passwordInput === 'password123')) ||
       passwordInput === 'password123';
 
     if (!isPasswordValid) {

@@ -20,10 +20,7 @@ import {
   Moon,
   Copy,
   Check,
-  Award,
-  Layers,
   Code,
-  Flame,
 } from 'lucide-react';
 import { DEFAULT_USER_PASSWORD } from '@/lib/storage';
 
@@ -114,19 +111,8 @@ export function LoginView() {
     }
   };
 
-  // Curated demo profiles showcase
+  // Curated demo profile showcase: Arjun Sharma only
   const demoProfiles = [
-    {
-      id: 'hitesh',
-      name: 'Hitesh Gauswami',
-      role: 'UPSC Drug Inspector Aspirant',
-      username: 'hitesh',
-      password: 'hitesh123',
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-      badgeColor: 'bg-amber-100 text-amber-950 border-amber-400',
-      focusTag: '8 Core Tasks: PYQ Test, Decode Lab, 30m Walk, Vipassana',
-      icon: Award,
-    },
     {
       id: 'arjun',
       name: 'Arjun Sharma',
@@ -137,28 +123,6 @@ export function LoginView() {
       badgeColor: 'bg-blue-100 text-blue-950 border-blue-400',
       focusTag: 'System Architecture, Focus Coding Sprints, Tech Reading',
       icon: Code,
-    },
-    {
-      id: 'priya',
-      name: 'Priya Nair',
-      role: 'Principal Product Designer',
-      username: 'priya',
-      password: 'priya123',
-      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
-      badgeColor: 'bg-emerald-100 text-emerald-950 border-emerald-400',
-      focusTag: 'Design Systems, UX Audits, Daily Mindfulness & Yoga',
-      icon: Layers,
-    },
-    {
-      id: 'vikram',
-      name: 'Vikram Patel',
-      role: 'Founder & Endurance Athlete',
-      username: 'vikram',
-      password: 'vikram123',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-      badgeColor: 'bg-purple-100 text-purple-950 border-purple-400',
-      focusTag: 'Startup Operations, 10k Marathon Training, Investor Calls',
-      icon: Flame,
     },
   ];
 
@@ -261,6 +225,26 @@ export function LoginView() {
           {activeTab === 'login' ? (
             /* Login Form */
             <form onSubmit={handleLogin} className="space-y-4">
+              {/* Primary Account Hint Banner */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 rounded-xl bg-amber-500/10 border border-amber-500/30 p-2.5 text-xs text-stone-900 dark:text-gold-200">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="font-extrabold text-stone-950 dark:text-gold-300">Sign in as:</span>
+                  <span className="rounded-md bg-stone-200 text-stone-950 dark:bg-peacock-800 dark:text-gold-300 border border-stone-300 dark:border-peacock-700 px-2 py-0.5 font-mono font-bold text-[11px]">
+                    User: <strong>hitesh</strong>
+                  </span>
+                  <span className="rounded-md bg-stone-200 text-stone-950 dark:bg-peacock-800 dark:text-gold-300 border border-stone-300 dark:border-peacock-700 px-2 py-0.5 font-mono font-bold text-[11px]">
+                    Pass: <strong>hitesh123</strong>
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleFillCredentials('hitesh', 'hitesh123')}
+                  className="rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-950 dark:text-gold-300 border border-amber-500/40 px-2.5 py-1 text-[11px] font-black transition"
+                >
+                  Autofill Hitesh
+                </button>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label className="block text-xs font-bold text-stone-900 dark:text-peacock-200 mb-1">
@@ -273,7 +257,7 @@ export function LoginView() {
                       required
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      placeholder="e.g. hitesh, arjun, priya"
+                      placeholder="e.g. hitesh"
                       className="w-full rounded-xl border border-stone-300 bg-white text-stone-950 dark:border-peacock-700 dark:bg-peacock-900/90 dark:text-white pl-10 pr-3.5 py-2.5 text-xs font-medium placeholder-stone-400 focus:border-amber-500 focus:outline-none shadow-sm"
                     />
                   </div>
@@ -326,87 +310,84 @@ export function LoginView() {
                 </button>
               </div>
 
-              {/* SAMPLE PROFILES SHOWCASE (ALL DEMO PROFILES EQUAL & PROMINENT) */}
+              {/* SAMPLE DEMO PROFILE (ARJUN SHARMA ONLY) */}
               <div className="mt-6 pt-5 border-t border-stone-300 dark:border-peacock-800/80">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-1.5 text-xs font-black uppercase tracking-wider text-amber-950 dark:text-gold-400">
                     <KeyRound className="h-4 w-4 text-amber-700 dark:text-gold-400" />
-                    <span>Demo Accounts & Sample Profiles</span>
+                    <span>Demo Account</span>
                   </div>
                   <span className="text-[11px] text-stone-700 dark:text-peacock-400 font-bold">
-                    Choose below to autofill or sign in:
+                    Sample profile for testing:
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="max-w-md mx-auto w-full">
                   {demoProfiles.map((p) => {
-                    const Icon = p.icon;
                     const isFilled = username === p.username && password === p.password;
 
                     return (
                       <div
                         key={p.id}
-                        className={`rounded-2xl border p-3 transition flex flex-col justify-between ${
+                        className={`rounded-2xl border p-4 transition flex flex-col justify-between ${
                           isFilled
                             ? 'border-amber-500 bg-amber-50/80 dark:border-gold-500 dark:bg-peacock-900/90 shadow-md ring-1 ring-amber-500'
                             : 'border-stone-300 bg-stone-200/60 hover:border-stone-400 dark:border-peacock-800 dark:bg-peacock-900/50 dark:hover:border-peacock-700'
                         }`}
                       >
                         <div>
-                          <div className="flex items-center space-x-2.5 mb-2">
+                          <div className="flex items-center space-x-3 mb-2.5">
                             <img
                               src={p.avatar}
                               alt={p.name}
-                              className="h-9 w-9 rounded-full border border-stone-400 dark:border-peacock-700 object-cover flex-shrink-0"
+                              className="h-10 w-10 rounded-full border border-stone-400 dark:border-peacock-700 object-cover flex-shrink-0"
                             />
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center justify-between">
-                                <span className="font-extrabold text-xs text-stone-950 dark:text-white truncate">
+                                <span className="font-extrabold text-sm text-stone-950 dark:text-white truncate">
                                   {p.name}
                                 </span>
-                                {p.id === 'hitesh' && (
-                                  <span className="rounded-full bg-amber-400 text-stone-950 border border-amber-500 px-1.5 py-0.2 text-[9px] font-black">
-                                    Target UPSC
-                                  </span>
-                                )}
+                                <span className="rounded-full bg-blue-100 text-blue-950 border border-blue-400 dark:bg-blue-900/60 dark:text-blue-300 px-2 py-0.5 text-[10px] font-bold">
+                                  Demo Profile
+                                </span>
                               </div>
-                              <span className="text-[10px] text-stone-700 dark:text-peacock-300 block truncate font-semibold">
+                              <span className="text-xs text-stone-700 dark:text-peacock-300 block truncate font-semibold">
                                 {p.role}
                               </span>
                             </div>
                           </div>
 
                           {/* Credentials Badges */}
-                          <div className="flex flex-wrap items-center gap-1.5 mb-2">
-                            <span className="rounded-md bg-stone-300 text-stone-950 border border-stone-400 dark:bg-peacock-800 dark:text-peacock-200 dark:border-peacock-700 px-2 py-0.5 text-[10px] font-mono font-bold">
+                          <div className="flex flex-wrap items-center gap-2 mb-2">
+                            <span className="rounded-md bg-stone-300 text-stone-950 border border-stone-400 dark:bg-peacock-800 dark:text-peacock-200 dark:border-peacock-700 px-2.5 py-0.5 text-[11px] font-mono font-bold">
                               User: <strong>{p.username}</strong>
                             </span>
-                            <span className="rounded-md bg-amber-100 text-amber-950 border border-amber-400 dark:bg-gold-500/20 dark:text-gold-300 dark:border-gold-500/40 px-2 py-0.5 text-[10px] font-mono font-black">
+                            <span className="rounded-md bg-amber-100 text-amber-950 border border-amber-400 dark:bg-gold-500/20 dark:text-gold-300 dark:border-gold-500/40 px-2.5 py-0.5 text-[11px] font-mono font-black">
                               Pass: <strong>{p.password}</strong>
                             </span>
                           </div>
 
-                          <p className="text-[10px] text-stone-600 dark:text-peacock-400 line-clamp-1 mb-2.5 font-medium">
+                          <p className="text-[11px] text-stone-600 dark:text-peacock-400 line-clamp-1 mb-3 font-medium">
                             {p.focusTag}
                           </p>
                         </div>
 
                         {/* Card Action Buttons */}
-                        <div className="flex items-center space-x-2 pt-1 border-t border-stone-300/80 dark:border-peacock-800/60">
+                        <div className="flex items-center space-x-2 pt-2 border-t border-stone-300/80 dark:border-peacock-800/60">
                           <button
                             type="button"
                             onClick={() => handleFillCredentials(p.username, p.password)}
-                            className="flex-1 flex items-center justify-center space-x-1 rounded-lg border border-stone-400 bg-stone-100 hover:bg-stone-300 text-stone-900 dark:border-peacock-700 dark:bg-peacock-800 dark:text-peacock-200 py-1.5 text-[10px] font-bold transition"
+                            className="flex-1 flex items-center justify-center space-x-1.5 rounded-xl border border-stone-400 bg-stone-100 hover:bg-stone-300 text-stone-900 dark:border-peacock-700 dark:bg-peacock-800 dark:text-peacock-200 py-2 text-xs font-bold transition"
                             title="Fill credentials into login form"
                           >
                             {copiedKey === p.username ? (
                               <>
-                                <Check className="h-3 w-3 text-emerald-700 dark:text-emerald-400" />
+                                <Check className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" />
                                 <span>Filled!</span>
                               </>
                             ) : (
                               <>
-                                <Copy className="h-3 w-3" />
+                                <Copy className="h-3.5 w-3.5" />
                                 <span>Fill Credentials</span>
                               </>
                             )}
@@ -415,10 +396,10 @@ export function LoginView() {
                           <button
                             type="button"
                             onClick={() => handleQuickLogin(p.username, p.password)}
-                            className="flex-1 flex items-center justify-center space-x-1 rounded-lg bg-stone-900 text-amber-300 hover:bg-stone-800 dark:bg-gold-500 dark:text-stone-950 dark:hover:bg-gold-400 py-1.5 text-[10px] font-black transition shadow-sm"
+                            className="flex-1 flex items-center justify-center space-x-1.5 rounded-xl bg-stone-900 text-amber-300 hover:bg-stone-800 dark:bg-gold-500 dark:text-stone-950 dark:hover:bg-gold-400 py-2 text-xs font-black transition shadow-sm"
                           >
                             <span>Sign In</span>
-                            <ArrowRight className="h-3 w-3" />
+                            <ArrowRight className="h-3.5 w-3.5" />
                           </button>
                         </div>
                       </div>
