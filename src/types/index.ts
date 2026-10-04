@@ -349,3 +349,23 @@ export interface MonthlyDashboardData {
   weeklyTrend: { weekLabel: string; completionRate: number; studyHours: number; score: number }[];
 }
 
+export interface AllTimeDashboardData {
+  startDate: string;
+  daysTracked: number;
+  totalTasks: number;
+  completedTasks: number;
+  missedTasks: number;
+  completionRate: number;
+  totalStudyHours: number;
+  averagePyqScore: number;
+  averagePyqAccuracy: number;
+  walkConsistencyRate: number;
+  vipassanaConsistencyRate: number;
+  englishSpeakingConsistencyRate: number;
+  marathonConsistencyRate: number;
+  decodeConsistencyRate: number;
+  reviewConsistencyRate: number;
+  bestMonth: string;
+  monthlyTrend: { monthLabel: string; completionRate: number; studyHours: number; daysTracked: number }[];
+}
+

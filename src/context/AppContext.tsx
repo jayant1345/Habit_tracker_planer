@@ -20,6 +20,7 @@ import {
   TodaySummaryReport,
   WeeklyDashboardData,
   MonthlyDashboardData,
+  AllTimeDashboardData,
   ReviewDetails,
 } from '@/types';
 import { useAuth } from './AuthContext';
@@ -31,9 +32,10 @@ import {
   calculateTodaySummary,
   calculateWeeklyDashboard,
   calculateMonthlyDashboard,
+  calculateAllTimeDashboard,
   calculateTaskStreaks,
 } from '@/lib/upscTracker';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
 type NavigationTab =
   | 'upsc_tracker'
@@ -70,6 +72,7 @@ interface AppContextType {
   getTodaySummary: (date?: string) => TodaySummaryReport;
   getWeeklyDashboardData: (refDate?: string) => WeeklyDashboardData;
   getMonthlyDashboardData: (refDate?: string) => MonthlyDashboardData;
+  getAllTimeDashboardData: () => AllTimeDashboardData;
   getTaskStreaks: () => Record<CoreTaskKey | 'overall', number>;
 
   // Habit Actions
@@ -653,7 +656,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const tasks = upscTasksMap[targetDate] || generateDailyTasksForDate(targetDate, upscScheduleBlocks);
       const review = upscReviewsMap[targetDate];
       const streaks = calculateTaskStreaks(upscTasksMap);
-      return calculateTodaySummary(tasks, review, streaks.overall, 86);
+      const weeklyRate = calculateWeeklyDashboard(upscTasksMap, parseISO(targetDate)).weeklyCompletionRate;
+      return calculateTodaySummary(tasks, review, streaks.overall, weeklyRate);
     },
     [selectedTrackerDate, upscTasksMap, upscReviewsMap, upscScheduleBlocks]
   );
@@ -671,6 +675,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     },
     [upscTasksMap]
   );
+
+  const getAllTimeDashboardData = useCallback((): AllTimeDashboardData => {
+    return calculateAllTimeDashboard(upscTasksMap, new Date());
+  }, [upscTasksMap]);
 
   const getTaskStreaks = useCallback(() => {
     return calculateTaskStreaks(upscTasksMap);
@@ -709,6 +717,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         getTodaySummary,
         getWeeklyDashboardData,
         getMonthlyDashboardData,
+        getAllTimeDashboardData,
         getTaskStreaks,
         toggleHabitCompletion,
         addHabit,

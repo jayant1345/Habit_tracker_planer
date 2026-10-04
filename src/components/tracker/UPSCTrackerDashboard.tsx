@@ -4,12 +4,13 @@ import React, { useState, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import { CoreTaskKey, DailyTaskItem, TaskExecutionStatus, MissedReason, PYQTestDetails, PYQSolutionDetails, DecodeDetails, EnglishDetails, ReviewDetails } from '@/types';
-import { calculateDailyScore } from '@/lib/upscTracker';
+import { calculateDailyScore, generateDailyTasksForDate } from '@/lib/upscTracker';
 import { DailyScoreCard } from './cards/DailyScoreCard';
 import { TaskRowItem } from './cards/TaskRowItem';
 import { TimeBlockingView } from './views/TimeBlockingView';
 import { WeeklyDashboardView } from './views/WeeklyDashboardView';
 import { MonthlyDashboardView } from './views/MonthlyDashboardView';
+import { AllTimeDashboardView } from './views/AllTimeDashboardView';
 import { PYQTestModal } from './modals/PYQTestModal';
 import { PYQSolutionModal } from './modals/PYQSolutionModal';
 import { DecodeTopicModal } from './modals/DecodeTopicModal';
@@ -34,7 +35,14 @@ import {
 } from 'lucide-react';
 import { format, subDays, addDays, parseISO } from 'date-fns';
 
-type SubViewTab = 'daily_tasks' | 'time_blocking' | 'pyq_lab' | 'nightly_review' | 'weekly_heatmap' | 'monthly_streaks';
+type SubViewTab =
+  | 'daily_tasks'
+  | 'time_blocking'
+  | 'pyq_lab'
+  | 'nightly_review'
+  | 'weekly_heatmap'
+  | 'monthly_streaks'
+  | 'all_time_progress';
 
 export function UPSCTrackerDashboard() {
   const { user } = useAuth();
@@ -50,6 +58,7 @@ export function UPSCTrackerDashboard() {
     getTodaySummary,
     getWeeklyDashboardData,
     getMonthlyDashboardData,
+    getAllTimeDashboardData,
     getTaskStreaks,
   } = useApp();
 
@@ -61,8 +70,8 @@ export function UPSCTrackerDashboard() {
 
   // Active tasks for current selectedTrackerDate
   const currentTasks = useMemo(() => {
-    return upscTasksMap[selectedTrackerDate] || [];
-  }, [upscTasksMap, selectedTrackerDate]);
+    return upscTasksMap[selectedTrackerDate] || generateDailyTasksForDate(selectedTrackerDate, upscScheduleBlocks);
+  }, [upscTasksMap, selectedTrackerDate, upscScheduleBlocks]);
 
   const currentReview = useMemo(() => {
     return upscReviewsMap[selectedTrackerDate];
@@ -83,6 +92,10 @@ export function UPSCTrackerDashboard() {
   const monthlyData = useMemo(() => {
     return getMonthlyDashboardData(selectedTrackerDate);
   }, [getMonthlyDashboardData, selectedTrackerDate]);
+
+  const allTimeData = useMemo(() => {
+    return getAllTimeDashboardData();
+  }, [getAllTimeDashboardData]);
 
   const streaks = useMemo(() => {
     return getTaskStreaks();
@@ -258,6 +271,18 @@ export function UPSCTrackerDashboard() {
         >
           <Flame className="h-4 w-4" />
           <span>Monthly Consistency & Streaks</span>
+        </button>
+
+        <button
+          onClick={() => setActiveSubTab('all_time_progress')}
+          className={`flex items-center space-x-2 rounded-xl px-4 py-2 text-xs font-black whitespace-nowrap transition ${
+            activeSubTab === 'all_time_progress'
+              ? 'bg-stone-900 text-amber-300 border border-stone-800 shadow-md dark:bg-gradient-to-r dark:from-peacock-800 dark:to-peacock-700 dark:text-gold-300 dark:border-gold-500/40'
+              : 'text-stone-800 hover:text-stone-950 hover:bg-stone-300/80 dark:text-peacock-300 dark:hover:text-white dark:hover:bg-peacock-900/50'
+          }`}
+        >
+          <TrendingUp className="h-4 w-4" />
+          <span>All-Time Progress</span>
         </button>
       </div>
 
@@ -581,6 +606,9 @@ export function UPSCTrackerDashboard() {
 
       {/* TAB 6: MONTHLY CONSISTENCY & STREAKS */}
       {activeSubTab === 'monthly_streaks' && <MonthlyDashboardView data={monthlyData} streaks={streaks} />}
+
+      {/* TAB 7: ALL-TIME PROGRESS */}
+      {activeSubTab === 'all_time_progress' && <AllTimeDashboardView data={allTimeData} />}
 
       {/* MODALS */}
       {activeModal === 'pyq_test' && (

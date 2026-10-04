@@ -1,0 +1,166 @@
+'use client';
+
+import React from 'react';
+import { AllTimeDashboardData } from '@/types';
+import { format, parseISO } from 'date-fns';
+import {
+  CalendarRange,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Award,
+  Footprints,
+  Sparkles,
+  Mic,
+  GitBranch,
+  PlayCircle,
+  Moon,
+  Trophy,
+} from 'lucide-react';
+
+interface AllTimeDashboardViewProps {
+  data: AllTimeDashboardData;
+}
+
+export function AllTimeDashboardView({ data }: AllTimeDashboardViewProps) {
+  const consistencyMeters = [
+    { label: 'Morning Walk', value: data.walkConsistencyRate, icon: Footprints, color: 'text-emerald-400' },
+    { label: 'Vipassana', value: data.vipassanaConsistencyRate, icon: Sparkles, color: 'text-purple-400' },
+    { label: 'Decode Topic', value: data.decodeConsistencyRate, icon: GitBranch, color: 'text-blue-400' },
+    { label: 'English Speaking', value: data.englishSpeakingConsistencyRate, icon: Mic, color: 'text-rose-400' },
+    { label: 'Marathon', value: data.marathonConsistencyRate, icon: PlayCircle, color: 'text-amber-400' },
+    { label: 'Nightly Review', value: data.reviewConsistencyRate, icon: Moon, color: 'text-gold-400' },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-3xl border border-gold-500/30 bg-gold-950/10 p-5 backdrop-blur-md">
+        <div className="flex items-center space-x-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gold-500/20 text-gold-400 border border-gold-500/40">
+            <CalendarRange className="h-6 w-6" />
+          </div>
+          <div>
+            <span className="text-xs font-bold uppercase tracking-wider text-gold-400">
+              All-Time Progress
+            </span>
+            <h3 className="text-lg font-bold text-white mt-0.5">
+              Since {format(parseISO(data.startDate), 'dd MMM yyyy')} • {data.daysTracked} day{data.daysTracked === 1 ? '' : 's'} tracked
+            </h3>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-2 rounded-2xl border border-gold-500/30 bg-peacock-900/80 px-4 py-2 self-start sm:self-center">
+          <Trophy className="h-5 w-5 text-gold-500 fill-gold-400" />
+          <div>
+            <span className="text-[10px] text-peacock-300 uppercase block font-semibold">Best Month</span>
+            <span className="text-base font-extrabold text-gold-300">{data.bestMonth}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Overview Stats Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
+        <div className="rounded-2xl border border-peacock-800 bg-peacock-950/70 p-3.5">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-peacock-400 block mb-1">Total Tasks</span>
+          <div className="text-2xl font-black text-white">{data.totalTasks}</div>
+          <div className="text-[10px] text-peacock-400">Logged since start</div>
+        </div>
+
+        <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3.5">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block mb-1">Completed</span>
+          <div className="text-2xl font-black text-emerald-300">{data.completedTasks}</div>
+          <div className="text-[10px] text-emerald-400/80">{data.completionRate}% completion</div>
+        </div>
+
+        <div className="rounded-2xl border border-red-500/30 bg-red-950/20 p-3.5">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-red-400 block mb-1">Missed</span>
+          <div className="text-2xl font-black text-red-300">{data.missedTasks}</div>
+          <div className="text-[10px] text-red-400/80">Across all tracked days</div>
+        </div>
+
+        <div className="rounded-2xl border border-peacock-800 bg-peacock-950/70 p-3.5">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-peacock-400 block mb-1">Study Hours</span>
+          <div className="text-2xl font-black text-white">{data.totalStudyHours}h</div>
+          <div className="text-[10px] text-peacock-400">Total deep work</div>
+        </div>
+
+        <div className="rounded-2xl border border-gold-500/30 bg-gold-500/10 p-3.5">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-gold-400 block mb-1">Avg PYQ Score</span>
+          <div className="text-2xl font-black text-gold-300">{data.averagePyqScore}</div>
+          <div className="text-[10px] text-gold-400/80">All-time average</div>
+        </div>
+
+        <div className="rounded-2xl border border-peacock-800 bg-peacock-950/70 p-3.5">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-peacock-400 block mb-1">Avg PYQ Accuracy</span>
+          <div className="text-2xl font-black text-emerald-300">{data.averagePyqAccuracy}%</div>
+          <div className="text-[10px] text-peacock-400">All-time average</div>
+        </div>
+      </div>
+
+      {/* Consistency Meters */}
+      <div className="rounded-3xl border border-gold-500/30 bg-peacock-950/70 p-5 backdrop-blur-xl shadow-xl">
+        <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center space-x-2">
+          <Award className="h-4 w-4 text-gold-400" />
+          <span>Core Habits Consistency (All-Time)</span>
+        </h4>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {consistencyMeters.map((meter) => {
+            const Icon = meter.icon;
+            return (
+              <div
+                key={meter.label}
+                className="rounded-2xl border border-peacock-800 bg-peacock-900/40 p-4 hover:border-gold-500/30 transition"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-2">
+                    <Icon className={`h-4 w-4 ${meter.color}`} />
+                    <span className="text-xs font-semibold text-peacock-200">{meter.label}</span>
+                  </div>
+                  <span className="text-sm font-black font-mono text-white">{meter.value}%</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-peacock-950 border border-peacock-800">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-peacock-500 to-gold-400 transition-all duration-500"
+                    style={{ width: `${meter.value}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Month-by-Month Trend */}
+      <div className="rounded-3xl border border-peacock-800 bg-peacock-950/60 p-5">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-peacock-300 mb-3">
+          Month-by-Month Progression
+        </h4>
+        {data.monthlyTrend.length === 0 ? (
+          <p className="text-xs text-peacock-400">No tracked months yet — mark some tasks to build your history.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {data.monthlyTrend.map((mt) => (
+              <div key={mt.monthLabel} className="rounded-2xl border border-peacock-800 bg-peacock-900/40 p-3">
+                <span className="text-xs font-bold text-white block">{mt.monthLabel}</span>
+                <div className="mt-2 flex items-baseline justify-between">
+                  <span className="text-[11px] text-peacock-400">Completion:</span>
+                  <span className="text-sm font-extrabold text-emerald-300">{mt.completionRate}%</span>
+                </div>
+                <div className="flex items-baseline justify-between mt-1">
+                  <span className="text-[11px] text-peacock-400">Study Hours:</span>
+                  <span className="text-sm font-extrabold text-blue-300">{mt.studyHours}h</span>
+                </div>
+                <div className="flex items-baseline justify-between mt-1">
+                  <span className="text-[11px] text-peacock-400">Days Tracked:</span>
+                  <span className="text-sm font-extrabold text-gold-300">{mt.daysTracked}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

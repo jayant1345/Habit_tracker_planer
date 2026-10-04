@@ -8,9 +8,10 @@ import {
   TodaySummaryReport,
   WeeklyDashboardData,
   MonthlyDashboardData,
+  AllTimeDashboardData,
   ReviewDetails,
 } from '@/types';
-import { format, subDays, startOfWeek, endOfWeek, eachDayOfInterval, parseISO, isSameDay } from 'date-fns';
+import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, parseISO, isSameDay, min as minDate } from 'date-fns';
 
 export const CORE_TASKS_CONFIG: Record<
   CoreTaskKey,
@@ -474,7 +475,7 @@ export function calculateTaskStreaks(
       break;
     }
   }
-  result.overall = Math.max(overallStreak, 7); // Default baseline realistic streak
+  result.overall = overallStreak;
 
   // Calculate individual task streaks
   const keys: CoreTaskKey[] = ['walk', 'vipassana', 'pyq_test', 'pyq_solution', 'decode', 'marathon', 'english', 'review'];
@@ -495,7 +496,7 @@ export function calculateTaskStreaks(
         break;
       }
     }
-    result[key] = Math.max(streak, key === 'walk' || key === 'vipassana' ? 9 : key === 'pyq_test' ? 6 : 5);
+    result[key] = streak;
   });
 
   return result;
@@ -630,15 +631,15 @@ export function calculateWeeklyDashboard(
     });
   });
 
-  const weeklyCompletionRate = totalTasksCount > 0 ? Math.round((totalCompletedTasks / totalTasksCount) * 100) : 84;
-  const studyCompletionRate = totalStudyTasks > 0 ? Math.round((completedStudyTasks / totalStudyTasks) * 100) : 86;
-  const habitCompletionRate = totalHabitTasks > 0 ? Math.round((completedHabitTasks / totalHabitTasks) * 100) : 92;
+  const weeklyCompletionRate = totalTasksCount > 0 ? Math.round((totalCompletedTasks / totalTasksCount) * 100) : 0;
+  const studyCompletionRate = totalStudyTasks > 0 ? Math.round((completedStudyTasks / totalStudyTasks) * 100) : 0;
+  const habitCompletionRate = totalHabitTasks > 0 ? Math.round((completedHabitTasks / totalHabitTasks) * 100) : 0;
 
-  const pyqAverageScore = pyqScores.length > 0 ? Math.round(pyqScores.reduce((a, b) => a + b, 0) / pyqScores.length) : 74;
-  const pyqAverageAccuracy = pyqAccuracies.length > 0 ? Math.round(pyqAccuracies.reduce((a, b) => a + b, 0) / pyqAccuracies.length) : 82;
+  const pyqAverageScore = pyqScores.length > 0 ? Math.round(pyqScores.reduce((a, b) => a + b, 0) / pyqScores.length) : 0;
+  const pyqAverageAccuracy = pyqAccuracies.length > 0 ? Math.round(pyqAccuracies.reduce((a, b) => a + b, 0) / pyqAccuracies.length) : 0;
 
   // Find most missed task
-  let mostMissedTask = 'PYQ Solution Analysis';
+  let mostMissedTask = 'None';
   let maxMissed = 0;
   Object.entries(missedCountByTask).forEach(([taskName, count]) => {
     if (count > maxMissed) {
@@ -653,20 +654,20 @@ export function calculateWeeklyDashboard(
   }));
 
   return {
-    weeklyCompletionRate: Math.max(weeklyCompletionRate, 82),
-    studyCompletionRate: Math.max(studyCompletionRate, 85),
-    habitCompletionRate: Math.max(habitCompletionRate, 90),
+    weeklyCompletionRate,
+    studyCompletionRate,
+    habitCompletionRate,
     pyqAverageScore,
     pyqAverageAccuracy,
-    totalStudyHours: parseFloat((Math.max(totalStudyMinutes, 1800) / 60).toFixed(1)),
-    totalWalkingMinutes: Math.max(totalWalkingMinutes, 180),
-    totalVipassanaMinutes: Math.max(totalVipassanaMinutes, 270),
-    totalEnglishMinutes: Math.max(totalEnglishMinutes, 150),
-    completedMarathons: Math.max(completedMarathons, 4),
-    completedDecodeTopics: Math.max(completedDecodeTopics, 5),
+    totalStudyHours: parseFloat((totalStudyMinutes / 60).toFixed(1)),
+    totalWalkingMinutes,
+    totalVipassanaMinutes,
+    totalEnglishMinutes,
+    completedMarathons,
+    completedDecodeTopics,
     bestExecutionDay,
     mostMissedTask,
-    currentStreak: 7,
+    currentStreak: calculateTaskStreaks(tasksMap).overall,
     missedReasonsBreakdown,
     sevenDayHeatmap,
   };
@@ -677,46 +678,228 @@ export function calculateMonthlyDashboard(
   tasksMap: Record<string, DailyTaskItem[]>,
   refDate: Date = new Date()
 ): MonthlyDashboardData {
-  let totalTasks = 240; // 30 days * 8
-  let completedTasks = 208;
-  let missedTasks = 22;
+  const monthStart = startOfMonth(refDate);
+  const monthEnd = endOfMonth(refDate);
+  const lastLivedDay = minDate([monthEnd, new Date()]);
+  const monthDays = eachDayOfInterval({ start: monthStart, end: lastLivedDay });
 
-  const totalStudyHours = 124.5;
-  const averagePyqScore = 76;
-  const averagePyqAccuracy = 84;
+  let totalTasks = 0;
+  let completedTasks = 0;
+  let missedTasks = 0;
+  let totalStudyMinutes = 0;
+  const pyqScores: number[] = [];
+  const pyqAccuracies: number[] = [];
 
-  const walkConsistencyRate = 93;
-  const vipassanaConsistencyRate = 89;
-  const englishSpeakingConsistencyRate = 82;
-  const marathonConsistencyRate = 78;
-  const decodeConsistencyRate = 85;
-  const reviewConsistencyRate = 90;
+  const consistencyCounts: Record<CoreTaskKey, { completed: number; total: number }> = {
+    walk: { completed: 0, total: 0 },
+    vipassana: { completed: 0, total: 0 },
+    pyq_test: { completed: 0, total: 0 },
+    pyq_solution: { completed: 0, total: 0 },
+    decode: { completed: 0, total: 0 },
+    marathon: { completed: 0, total: 0 },
+    english: { completed: 0, total: 0 },
+    review: { completed: 0, total: 0 },
+  };
 
-  const completionRate = Math.round((completedTasks / totalTasks) * 100);
+  const weekBuckets = new Map<number, { completed: number; total: number; studyMinutes: number; scores: number[] }>();
 
-  const weeklyTrend = [
-    { weekLabel: 'Week 1', completionRate: 78, studyHours: 28.5, score: 79 },
-    { weekLabel: 'Week 2', completionRate: 83, studyHours: 31.0, score: 84 },
-    { weekLabel: 'Week 3', completionRate: 87, studyHours: 32.5, score: 88 },
-    { weekLabel: 'Current Week', completionRate: 91, studyHours: 32.5, score: 92 },
-  ];
+  monthDays.forEach((day) => {
+    const dStr = format(day, 'yyyy-MM-dd');
+    const tasks = tasksMap[dStr] || generateDailyTasksForDate(dStr);
+    const weekIndex = Math.floor((day.getDate() - 1) / 7);
+    if (!weekBuckets.has(weekIndex)) {
+      weekBuckets.set(weekIndex, { completed: 0, total: 0, studyMinutes: 0, scores: [] });
+    }
+    const bucket = weekBuckets.get(weekIndex)!;
+
+    const dayScore = calculateDailyScore(tasks);
+    bucket.scores.push(dayScore.totalScore);
+
+    tasks.forEach((t) => {
+      totalTasks++;
+      bucket.total++;
+      consistencyCounts[t.taskKey].total++;
+
+      if (t.status === 'completed') {
+        completedTasks++;
+        bucket.completed++;
+        consistencyCounts[t.taskKey].completed++;
+      }
+      if (t.status === 'missed') {
+        missedTasks++;
+      }
+      if (t.category === 'Study' && t.status === 'completed') {
+        const mins = t.actualDurationMinutes || t.targetDurationMinutes;
+        totalStudyMinutes += mins;
+        bucket.studyMinutes += mins;
+      }
+      if (t.taskKey === 'pyq_test' && t.pyqTestDetails && t.pyqTestDetails.attempted > 0) {
+        pyqScores.push(t.pyqTestDetails.score);
+        pyqAccuracies.push(t.pyqTestDetails.accuracy);
+      }
+    });
+  });
+
+  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  const averagePyqScore = pyqScores.length > 0 ? Math.round(pyqScores.reduce((a, b) => a + b, 0) / pyqScores.length) : 0;
+  const averagePyqAccuracy =
+    pyqAccuracies.length > 0 ? Math.round(pyqAccuracies.reduce((a, b) => a + b, 0) / pyqAccuracies.length) : 0;
+
+  const consistencyRate = (key: CoreTaskKey) => {
+    const c = consistencyCounts[key];
+    return c.total > 0 ? Math.round((c.completed / c.total) * 100) : 0;
+  };
+
+  const weeklyTrend = Array.from(weekBuckets.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([weekIndex, bucket], i, arr) => ({
+      weekLabel: i === arr.length - 1 ? 'Current Week' : `Week ${weekIndex + 1}`,
+      completionRate: bucket.total > 0 ? Math.round((bucket.completed / bucket.total) * 100) : 0,
+      studyHours: parseFloat((bucket.studyMinutes / 60).toFixed(1)),
+      score: bucket.scores.length > 0 ? Math.round(bucket.scores.reduce((a, b) => a + b, 0) / bucket.scores.length) : 0,
+    }));
+
+  // Trend: compare first half vs second half of tracked weeks
+  let trend: 'improving' | 'declining' | 'steady' = 'steady';
+  if (weeklyTrend.length >= 2) {
+    const first = weeklyTrend[0].completionRate;
+    const last = weeklyTrend[weeklyTrend.length - 1].completionRate;
+    if (last > first + 3) trend = 'improving';
+    else if (last < first - 3) trend = 'declining';
+  }
 
   return {
     totalTasks,
     completedTasks,
     missedTasks,
     completionRate,
-    totalStudyHours,
+    totalStudyHours: parseFloat((totalStudyMinutes / 60).toFixed(1)),
     averagePyqScore,
     averagePyqAccuracy,
-    walkConsistencyRate,
-    vipassanaConsistencyRate,
-    englishSpeakingConsistencyRate,
-    marathonConsistencyRate,
-    decodeConsistencyRate,
-    reviewConsistencyRate,
-    trend: 'improving',
+    walkConsistencyRate: consistencyRate('walk'),
+    vipassanaConsistencyRate: consistencyRate('vipassana'),
+    englishSpeakingConsistencyRate: consistencyRate('english'),
+    marathonConsistencyRate: consistencyRate('marathon'),
+    decodeConsistencyRate: consistencyRate('decode'),
+    reviewConsistencyRate: consistencyRate('review'),
+    trend,
     weeklyTrend,
+  };
+}
+
+export function calculateAllTimeDashboard(
+  tasksMap: Record<string, DailyTaskItem[]>,
+  refDate: Date = new Date()
+): AllTimeDashboardData {
+  const recordedDates = Object.keys(tasksMap).sort();
+  const startDateStr = recordedDates.length > 0 ? recordedDates[0] : format(refDate, 'yyyy-MM-dd');
+  const startDate = parseISO(startDateStr);
+  const allDays = eachDayOfInterval({ start: startDate, end: refDate });
+
+  let totalTasks = 0;
+  let completedTasks = 0;
+  let missedTasks = 0;
+  let totalStudyMinutes = 0;
+  const pyqScores: number[] = [];
+  const pyqAccuracies: number[] = [];
+
+  const consistencyCounts: Record<CoreTaskKey, { completed: number; total: number }> = {
+    walk: { completed: 0, total: 0 },
+    vipassana: { completed: 0, total: 0 },
+    pyq_test: { completed: 0, total: 0 },
+    pyq_solution: { completed: 0, total: 0 },
+    decode: { completed: 0, total: 0 },
+    marathon: { completed: 0, total: 0 },
+    english: { completed: 0, total: 0 },
+    review: { completed: 0, total: 0 },
+  };
+
+  const monthBuckets = new Map<string, { completed: number; total: number; studyMinutes: number; days: Set<string> }>();
+
+  allDays.forEach((day) => {
+    const dStr = format(day, 'yyyy-MM-dd');
+    // Only count days that actually have a recorded entry (avoid padding future/unlived days)
+    const tasks = tasksMap[dStr];
+    if (!tasks) return;
+
+    const monthKey = format(day, 'yyyy-MM');
+    if (!monthBuckets.has(monthKey)) {
+      monthBuckets.set(monthKey, { completed: 0, total: 0, studyMinutes: 0, days: new Set() });
+    }
+    const bucket = monthBuckets.get(monthKey)!;
+    bucket.days.add(dStr);
+
+    tasks.forEach((t) => {
+      totalTasks++;
+      bucket.total++;
+      consistencyCounts[t.taskKey].total++;
+
+      if (t.status === 'completed') {
+        completedTasks++;
+        bucket.completed++;
+        consistencyCounts[t.taskKey].completed++;
+      }
+      if (t.status === 'missed') {
+        missedTasks++;
+      }
+      if (t.category === 'Study' && t.status === 'completed') {
+        const mins = t.actualDurationMinutes || t.targetDurationMinutes;
+        totalStudyMinutes += mins;
+        bucket.studyMinutes += mins;
+      }
+      if (t.taskKey === 'pyq_test' && t.pyqTestDetails && t.pyqTestDetails.attempted > 0) {
+        pyqScores.push(t.pyqTestDetails.score);
+        pyqAccuracies.push(t.pyqTestDetails.accuracy);
+      }
+    });
+  });
+
+  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  const averagePyqScore = pyqScores.length > 0 ? Math.round(pyqScores.reduce((a, b) => a + b, 0) / pyqScores.length) : 0;
+  const averagePyqAccuracy =
+    pyqAccuracies.length > 0 ? Math.round(pyqAccuracies.reduce((a, b) => a + b, 0) / pyqAccuracies.length) : 0;
+
+  const consistencyRate = (key: CoreTaskKey) => {
+    const c = consistencyCounts[key];
+    return c.total > 0 ? Math.round((c.completed / c.total) * 100) : 0;
+  };
+
+  const monthlyTrend = Array.from(monthBuckets.entries())
+    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .map(([monthKey, bucket]) => ({
+      monthLabel: format(parseISO(`${monthKey}-01`), 'MMM yyyy'),
+      completionRate: bucket.total > 0 ? Math.round((bucket.completed / bucket.total) * 100) : 0,
+      studyHours: parseFloat((bucket.studyMinutes / 60).toFixed(1)),
+      daysTracked: bucket.days.size,
+    }));
+
+  let bestMonth = 'N/A';
+  let bestRate = -1;
+  monthlyTrend.forEach((m) => {
+    if (m.completionRate > bestRate) {
+      bestRate = m.completionRate;
+      bestMonth = m.monthLabel;
+    }
+  });
+
+  return {
+    startDate: startDateStr,
+    daysTracked: recordedDates.length,
+    totalTasks,
+    completedTasks,
+    missedTasks,
+    completionRate,
+    totalStudyHours: parseFloat((totalStudyMinutes / 60).toFixed(1)),
+    averagePyqScore,
+    averagePyqAccuracy,
+    walkConsistencyRate: consistencyRate('walk'),
+    vipassanaConsistencyRate: consistencyRate('vipassana'),
+    englishSpeakingConsistencyRate: consistencyRate('english'),
+    marathonConsistencyRate: consistencyRate('marathon'),
+    decodeConsistencyRate: consistencyRate('decode'),
+    reviewConsistencyRate: consistencyRate('review'),
+    bestMonth,
+    monthlyTrend,
   };
 }
 

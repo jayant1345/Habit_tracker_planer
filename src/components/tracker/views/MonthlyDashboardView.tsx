@@ -35,14 +35,14 @@ export function MonthlyDashboardView({ data, streaks }: MonthlyDashboardViewProp
   ];
 
   const individualStreaks: { label: string; key: CoreTaskKey; count: number }[] = [
-    { label: 'PYQ Test', key: 'pyq_test', count: streaks.pyq_test || 6 },
-    { label: 'PYQ Solution Analysis', key: 'pyq_solution', count: streaks.pyq_solution || 6 },
-    { label: '1 Marathon', key: 'marathon', count: streaks.marathon || 5 },
-    { label: '1 Same Topic from Decode', key: 'decode', count: streaks.decode || 7 },
-    { label: 'English Speaking Practice', key: 'english', count: streaks.english || 5 },
-    { label: 'Morning 30-min Walk', key: 'walk', count: streaks.walk || 9 },
-    { label: '45-min Vipassana', key: 'vipassana', count: streaks.vipassana || 9 },
-    { label: 'Review Work', key: 'review', count: streaks.review || 8 },
+    { label: 'PYQ Test', key: 'pyq_test', count: streaks.pyq_test },
+    { label: 'PYQ Solution Analysis', key: 'pyq_solution', count: streaks.pyq_solution },
+    { label: '1 Marathon', key: 'marathon', count: streaks.marathon },
+    { label: '1 Same Topic from Decode', key: 'decode', count: streaks.decode },
+    { label: 'English Speaking Practice', key: 'english', count: streaks.english },
+    { label: 'Morning 30-min Walk', key: 'walk', count: streaks.walk },
+    { label: '45-min Vipassana', key: 'vipassana', count: streaks.vipassana },
+    { label: 'Review Work', key: 'review', count: streaks.review },
   ];
 
   return (
@@ -58,8 +58,16 @@ export function MonthlyDashboardView({ data, streaks }: MonthlyDashboardViewProp
               <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
                 Discipline Trajectory
               </span>
-              <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300 border border-emerald-500/30">
-                Trending Upwards 📈
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] font-bold border ${
+                  data.trend === 'improving'
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                    : data.trend === 'declining'
+                    ? 'bg-red-500/20 text-red-300 border-red-500/30'
+                    : 'bg-peacock-800/50 text-peacock-300 border-peacock-700/50'
+                }`}
+              >
+                {data.trend === 'improving' ? 'Trending Upwards 📈' : data.trend === 'declining' ? 'Trending Down 📉' : 'Holding Steady ➖'}
               </span>
             </div>
             <h3 className="text-lg font-bold text-white mt-0.5">
@@ -72,7 +80,7 @@ export function MonthlyDashboardView({ data, streaks }: MonthlyDashboardViewProp
           <Flame className="h-5 w-5 text-gold-500 fill-gold-400" />
           <div>
             <span className="text-[10px] text-peacock-300 uppercase block font-semibold">Overall Streak</span>
-            <span className="text-base font-extrabold text-gold-300">{streaks.overall || 7} Days</span>
+            <span className="text-base font-extrabold text-gold-300">{streaks.overall} Days</span>
           </div>
         </div>
       </div>
@@ -84,7 +92,7 @@ export function MonthlyDashboardView({ data, streaks }: MonthlyDashboardViewProp
             Total Tasks
           </span>
           <div className="text-2xl font-black text-white">{data.totalTasks}</div>
-          <div className="text-[10px] text-peacock-400">30-day scheduled</div>
+          <div className="text-[10px] text-peacock-400">This month, scheduled</div>
         </div>
 
         <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3.5">
@@ -132,7 +140,7 @@ export function MonthlyDashboardView({ data, streaks }: MonthlyDashboardViewProp
       <div className="rounded-3xl border border-gold-500/30 bg-peacock-950/70 p-5 backdrop-blur-xl shadow-xl">
         <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center space-x-2">
           <Zap className="h-4 w-4 text-gold-400" />
-          <span>Core Habits Consistency Rates (30-Day Evaluation)</span>
+          <span>Core Habits Consistency Rates (This Month)</span>
         </h4>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -187,7 +195,7 @@ export function MonthlyDashboardView({ data, streaks }: MonthlyDashboardViewProp
             >
               <div>
                 <span className="text-xs font-semibold text-white block">{item.label}</span>
-                <span className="text-[10px] text-peacock-400">Streak Active</span>
+                <span className="text-[10px] text-peacock-400">{item.count > 0 ? 'Streak Active' : 'No Active Streak'}</span>
               </div>
               <div className="flex items-center space-x-1 text-gold-400 font-black text-base">
                 <Flame className="h-4 w-4 fill-gold-400" />
